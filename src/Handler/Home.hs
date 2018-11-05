@@ -1,74 +1,38 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NamedFieldPuns        #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE Rank2Types            #-}
+{-# LANGUAGE RecordWildCards       #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 module Handler.Home where
 
+
+import qualified Data.Double.Conversion.Text as Conversion
+import           Instana.SDK.SDK             (InstanaContext)
+import qualified Instana.SDK.SDK             as InstanaSDK
+
 import           Import
-import           Text.Julius           (RawJS (..))
-import           Yesod.Form.Bootstrap3 (BootstrapFormLayout (..),
-                                        renderBootstrap3)
 
--- Define our data that will be used for creating the form.
-data FileForm = FileForm
-    { fileInfo        :: FileInfo
-    , fileDescription :: Text
-    }
 
--- This is a handler function for the GET request method on the HomeR
--- resource pattern. All of your resource patterns are defined in
--- config/routes
---
--- The majority of the code you will write in Yesod lives in these handler
--- functions. You can spread them across multiple files if you are so
--- inclined, or create a single monolithic file.
 getHomeR :: Handler Html
 getHomeR = do
-    (formWidget, formEnctype) <- generateFormPost sampleForm
-    let submission = Nothing :: Maybe FileForm
-        handlerName = "getHomeR" :: Text
-    allComments <- runDB $ getAllComments
+  App { instana } <- getYesod
+  request <- waiRequest
 
-    defaultLayout $ do
-        let (commentFormId, commentTextareaId, commentListId) = commentIds
-        aDomId <- newIdent
-        setTitle "Welcome To Yesod!"
-        $(widgetFile "homepage")
+  -- TODO Capture extra headers, helper function from SDK needed
+  InstanaSDK.withHttpEntry instana request "haskell.wai.server" $ do
+    allProducts <- runDB $ getAllProducts instana
+    result <- defaultLayout $ do
+      aDomId <- newIdent
+      setTitle "Stan's Monad Shop"
+      $(widgetFile "homepage")
+    InstanaSDK.addDataAt instana "http.status" (200 :: Int)
+    return result
 
-postHomeR :: Handler Html
-postHomeR = do
-    ((result, formWidget), formEnctype) <- runFormPost sampleForm
-    let handlerName = "postHomeR" :: Text
-        submission = case result of
-            FormSuccess res -> Just res
-            _               -> Nothing
-    allComments <- runDB $ getAllComments
 
-    defaultLayout $ do
-        let (commentFormId, commentTextareaId, commentListId) = commentIds
-        aDomId <- newIdent
-        setTitle "Welcome To Yesod!"
-        $(widgetFile "homepage")
+getAllProducts :: InstanaContext -> DB [Entity Product]
+getAllProducts instana =
+  InstanaSDK.withExit instana "postgres" $ selectList [] [Asc ProductId]
 
-sampleForm :: Form FileForm
-sampleForm = renderBootstrap3 BootstrapBasicForm $ FileForm
-    <$> fileAFormReq "Choose a file"
-    <*> areq textField textSettings Nothing
-    -- Add attributes like the placeholder and CSS classes.
-    where textSettings = FieldSettings
-            { fsLabel = "What's on the file?"
-            , fsTooltip = Nothing
-            , fsId = Nothing
-            , fsName = Nothing
-            , fsAttrs =
-                [ ("class", "form-control")
-                , ("placeholder", "File description")
-                ]
-            }
-
-commentIds :: (Text, Text, Text)
-commentIds = ("js-commentForm", "js-createCommentTextarea", "js-commentList")
-
-getAllComments :: DB [Entity Comment]
-getAllComments = selectList [] [Asc CommentId]

@@ -10,6 +10,7 @@
 -- declared in the Foundation.hs file.
 module Settings where
 
+
 import           ClassyPrelude.Yesod
 import qualified Control.Exception           as Exception
 import           Data.Aeson                  (Result (..), fromJSON, withObject,
@@ -59,10 +60,8 @@ data AppSettings = AppSettings
     -- ^ Copyright text to appear in the footer of the page
     , appAnalytics              :: Maybe Text
     -- ^ Google Analytics code
-
-    , appAuthDummyLogin         :: Bool
-    -- ^ Indicate if auth dummy login should be enabled.
     }
+
 
 instance FromJSON AppSettings where
     parseJSON = withObject "AppSettings" $ \o -> do
@@ -90,9 +89,8 @@ instance FromJSON AppSettings where
         appCopyright              <- o .:  "copyright"
         appAnalytics              <- o .:? "analytics"
 
-        appAuthDummyLogin         <- o .:? "auth-dummy-login"      .!= dev
-
         return AppSettings {..}
+
 
 -- | Settings for 'widgetFile', such as which template languages to support and
 -- default Hamlet settings.
@@ -103,9 +101,11 @@ instance FromJSON AppSettings where
 widgetFileSettings :: WidgetFileSettings
 widgetFileSettings = def
 
+
 -- | How static files should be combined.
 combineSettings :: CombineSettings
 combineSettings = def
+
 
 -- The rest of this file contains settings which rarely need changing by a
 -- user.
@@ -116,14 +116,17 @@ widgetFile = (if appReloadTemplates compileTimeAppSettings
                 else widgetFileNoReload)
               widgetFileSettings
 
+
 -- | Raw bytes at compile time of @config/settings.yml@
 configSettingsYmlBS :: ByteString
 configSettingsYmlBS = $(embedFile configSettingsYml)
+
 
 -- | @config/settings.yml@, parsed to a @Value@.
 configSettingsYmlValue :: Value
 configSettingsYmlValue = either Exception.throw id
                        $ decodeEither' configSettingsYmlBS
+
 
 -- | A version of @AppSettings@ parsed at compile time from @config/settings.yml@.
 compileTimeAppSettings :: AppSettings
@@ -131,6 +134,7 @@ compileTimeAppSettings =
     case fromJSON $ applyEnvValue False mempty configSettingsYmlValue of
         Error e          -> error e
         Success settings -> settings
+
 
 -- The following two functions can be used to combine multiple CSS or JS files
 -- at compile time to decrease the number of http requests.
@@ -142,6 +146,7 @@ combineStylesheets :: Name -> [Route Static] -> Q Exp
 combineStylesheets = combineStylesheets'
     (appSkipCombining compileTimeAppSettings)
     combineSettings
+
 
 combineScripts :: Name -> [Route Static] -> Q Exp
 combineScripts = combineScripts'

@@ -9,7 +9,6 @@ dependencies:
 
 - yesod >=1.6 && <1.7
 - yesod-core >=1.6 && <1.7
-- yesod-auth >=1.6 && <1.7
 - yesod-static >=1.6 && <1.7
 - yesod-form >=1.6 && <1.7
 - classy-prelude >=1.4 && <1.5
@@ -83,17 +82,6 @@ executables:
     when:
     - condition: flag(library-only)
       buildable: false
-
-# Test suite
-tests:
-  monad-shop-test:
-    main: Spec.hs
-    source-dirs: test
-    ghc-options: -Wall
-    dependencies:
-    - monad-shop
-    - hspec >=2.0.0
-    - yesod-test
 
 # Define flags used by "yesod devel" to make compilation faster
 flags:
