@@ -7,6 +7,7 @@
 {-# LANGUAGE ViewPatterns          #-}
 {-# OPTIONS_GHC -fno-warn-orphans  #-}
 
+
 module Application
     ( getApplicationDev
     , appMain
@@ -29,6 +30,7 @@ import           Database.Persist.Postgresql          (createPostgresqlPool,
 import qualified DummyData
 import           Import
 import qualified Instana.SDK.SDK                      as InstanaSDK
+import qualified Instana.Wai.Middleware.Entry         as InstanaWaiMiddleware
 import           Language.Haskell.TH.Syntax           (qLocation)
 import           Network.HTTP.Client.TLS              (getGlobalManager)
 import           Network.Wai                          (Middleware)
@@ -51,6 +53,7 @@ import           System.Log.FastLogger                (defaultBufSize,
 import           Handler.Common
 import           Handler.Home
 import           Handler.Product
+import qualified Foundation                            as Foundation
 
 
 mkYesodDispatch "App" resourcesApp
@@ -89,9 +92,14 @@ makeFoundation appSettings = do
 makeApplication :: App -> IO Application
 makeApplication foundation = do
     logWare <- makeLogWare foundation
+    let
+      instana = Foundation.instana foundation
     -- Create the WAI application and apply middlewares
     appPlain <- toWaiAppPlain foundation
-    return $ logWare $ defaultMiddlewaresNoLogging appPlain
+    return $
+      logWare $
+        (InstanaWaiMiddleware.traceHttpEntries instana) $
+          defaultMiddlewaresNoLogging appPlain
 
 
 makeLogWare :: App -> IO Middleware
@@ -161,7 +169,9 @@ appMain = do
     app <- makeApplication foundation
 
     -- Run the application with Warp
-    runSettings (warpSettings foundation) app
+    runSettings
+      (warpSettings foundation)
+      app
 
 
 --------------------------------------------------------------

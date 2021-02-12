@@ -19,17 +19,14 @@ import           Import
 getHomeR :: Handler Html
 getHomeR = do
   App { instana } <- getYesod
-  request <- waiRequest
 
-  -- TODO Capture extra headers, helper function from SDK needed
-  InstanaSDK.withHttpEntry instana request "haskell.wai.server" $ do
-    allProducts <- runDB $ getAllProducts instana
-    result <- defaultLayout $ do
-      aDomId <- newIdent
-      setTitle "Stan's Monad Shop"
-      $(widgetFile "homepage")
-    InstanaSDK.addRegisteredDataAt instana "http.status" (200 :: Int)
-    return result
+  allProducts <- runDB $ getAllProducts instana
+  result <- defaultLayout $ do
+    aDomId <- newIdent
+    setTitle "Stan's Monad Shop"
+    $(widgetFile "homepage")
+  InstanaSDK.addRegisteredDataAt instana "http.status" (200 :: Int)
+  return result
 
 
 getAllProducts :: InstanaContext -> DB [Entity Product]

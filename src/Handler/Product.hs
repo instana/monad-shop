@@ -9,7 +9,6 @@
 {-# LANGUAGE TypeFamilies          #-}
 module Handler.Product where
 
-import           Data.Aeson                  ((.=))
 import qualified Data.Aeson                  as Aeson
 import qualified Data.ByteString.Lazy.Char8  as Char8
 import qualified Data.Double.Conversion.Text as Conversion
@@ -23,21 +22,18 @@ import           Import
 getProductR :: Key Product -> Handler Html
 getProductR key = do
   App { instana, appHttpManager } <- getYesod
-  request <- waiRequest
-  -- TODO Capture extra headers, helper function from SDK needed
-  InstanaSDK.withHttpEntry instana request "haskell.wai.server" $ do
-    p <- runDB $ getProductDetails instana key
-    case p of
-      Nothing -> do
-        notFound
-      Just details -> do
-        recommendations <-
-          liftIO $
-            getRecommendations instana appHttpManager key
-        result <- defaultLayout $ do
-          $(widgetFile "product")
-        InstanaSDK.addRegisteredDataAt instana "http.status" (200 :: Int)
-        return result
+  p <- runDB $ getProductDetails instana key
+  case p of
+    Nothing -> do
+      notFound
+    Just details -> do
+      recommendations <-
+        liftIO $
+          getRecommendations instana appHttpManager key
+      result <- defaultLayout $ do
+        $(widgetFile "product")
+      InstanaSDK.addRegisteredDataAt instana "http.status" (200 :: Int)
+      return result
 
 
 getProductDetails ::
