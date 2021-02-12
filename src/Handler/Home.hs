@@ -28,7 +28,7 @@ getHomeR = do
       aDomId <- newIdent
       setTitle "Stan's Monad Shop"
       $(widgetFile "homepage")
-    InstanaSDK.addDataAt instana "http.status" (200 :: Int)
+    InstanaSDK.addRegisteredDataAt instana "http.status" (200 :: Int)
     return result
 
 

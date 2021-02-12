@@ -37,5 +37,5 @@ database:
   database: "_env:YESOD_PGDATABASE:monad-shop"
   poolsize: "_env:YESOD_PGPOOLSIZE:10"
 
-copyright: © 2018 Instana Inc.
+copyright: © 2021 Instana Inc.
 #analytics: UA-YOURCODE

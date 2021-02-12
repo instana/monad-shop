@@ -36,7 +36,7 @@ getProductR key = do
             getRecommendations instana appHttpManager key
         result <- defaultLayout $ do
           $(widgetFile "product")
-        InstanaSDK.addDataAt instana "http.status" (200 :: Int)
+        InstanaSDK.addRegisteredDataAt instana "http.status" (200 :: Int)
         return result
 
 
@@ -64,7 +64,7 @@ getRecommendations instana appHttpManager key = do
         ]
       }
   InstanaSDK.withExit instana "haskell.http.client" $ do
-    InstanaSDK.addData
+    InstanaSDK.addRegisteredData
       instana
       (Aeson.object [ "http" .=
         Aeson.object
@@ -76,7 +76,7 @@ getRecommendations instana appHttpManager key = do
     catch
       ( do
         response <- HTTP.httpLbs request appHttpManager
-        InstanaSDK.addDataAt instana "http.status" (200 :: Int)
+        InstanaSDK.addRegisteredDataAt instana "http.status" (200 :: Int)
         let
           body = HTTP.responseBody response
           result = pack $ Char8.unpack body
@@ -84,8 +84,8 @@ getRecommendations instana appHttpManager key = do
       )
       (\(_ :: SomeException) -> do
         InstanaSDK.incrementErrorCount instana
-        InstanaSDK.addDataAt instana "http.status" (500 :: Int)
-        InstanaSDK.addDataAt instana "http.error" ("Request failed" :: String)
+        InstanaSDK.addRegisteredDataAt instana "http.status" (500 :: Int)
+        InstanaSDK.addRegisteredDataAt instana "http.error" ("Request failed" :: String)
         return "Recommendations could not be loaded."
       )
 

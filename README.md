@@ -1,9 +1,9 @@
 ## Database Setup
 
-After installing Postgres, run:
+After installing Postgres, run the following (in a shell, not in psql):
 
 ```
-createuser monad-shop --password monad-shop --superuser
+createuser --pwprompt --superuser monad-shop # use monad-shop as password when prompted
 createdb monad-shop
 createdb monad-shop_test
 ```
