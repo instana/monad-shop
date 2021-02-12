@@ -60,6 +60,8 @@ data AppSettings = AppSettings
     -- ^ Copyright text to appear in the footer of the page
     , appAnalytics              :: Maybe Text
     -- ^ Google Analytics code
+    , appInstanaEumConf         :: InstanaEumConf
+    -- ^ Instana website monitoring configuration
     }
 
 
@@ -89,7 +91,22 @@ instance FromJSON AppSettings where
         appCopyright              <- o .:  "copyright"
         appAnalytics              <- o .:? "analytics"
 
+        appInstanaEumConf         <- o .: "instana-eum"
+
         return AppSettings {..}
+
+
+data InstanaEumConf = InstanaEumConf
+    { reportingUrl :: Text
+    , key :: Text
+    }
+
+
+instance FromJSON InstanaEumConf where
+    parseJSON = withObject "InstanaEumConf" $ \o -> do
+        reportingUrl  <- o .: "reporting-url"
+        key           <- o .: "key"
+        return InstanaEumConf {..}
 
 
 -- | Settings for 'widgetFile', such as which template languages to support and
