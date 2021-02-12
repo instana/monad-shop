@@ -1,3 +1,8 @@
+# The Monad Shop
+
+This is an example for a [Yesod](https://www.yesodweb.com/) web application with Instana integration via the [Instana Haskell Trace SDK](http://hackage.haskell.org/package/instana-haskell-trace-sdk).
+You can also buy the best monads in town here, and at a bargain price, too!
+
 ## Haskell Setup
 
 1. If you haven't already, [install Stack](https://haskell-lang.org/get-started)
@@ -26,3 +31,4 @@ stack exec -- yesod devel
 ```
 
 As your code changes, your site will be automatically recompiled and redeployed to localhost.
+
